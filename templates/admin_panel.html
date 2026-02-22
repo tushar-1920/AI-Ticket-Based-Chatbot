@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>🏢 Enterprise Admin Panel</h2>
+
+<!-- Stats cards -->
+
+<div class="row mt-4">
+
+<div class="col-md-3">
+<div class="glass p-3 text-center">
+<h6>Total Tickets</h6>
+<h3>{{ total_tickets }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="glass p-3 text-center">
+<h6>Open Tickets</h6>
+<h3>{{ open_tickets }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="glass p-3 text-center">
+<h6>Resolved</h6>
+<h3>{{ resolved_tickets }}</h3>
+</div>
+</div>
+
+<div class="col-md-3">
+<div class="glass p-3 text-center">
+<h6>Total Users</h6>
+<h3>{{ total_users }}</h3>
+</div>
+</div>
+
+</div>
+
+
+<!-- Trend Chart -->
+
+<div class="glass mt-4 p-3">
+
+<h5>📈 Ticket Trends</h5>
+
+<canvas id="trendChart"></canvas>
+
+</div>
+
+
+<!-- Ticket Table -->
+
+<div class="glass mt-4 p-3">
+
+<h5>🎫 Recent Tickets</h5>
+
+<table class="table table-dark table-hover">
+
+<thead>
+
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Status</th>
+<th>Priority</th>
+<th>Date</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for ticket in tickets %}
+
+<tr>
+
+<td>{{ ticket.id }}</td>
+
+<td>{{ ticket.issue }}</td>
+
+<td>{{ ticket.status }}</td>
+
+<td>{{ ticket.priority }}</td>
+
+<td>{{ ticket.created_at }}</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<!-- JSON data -->
+
+<script id="trend-labels" type="application/json">
+{{ trend_labels | tojson }}
+</script>
+
+<script id="trend-values" type="application/json">
+{{ trend_values | tojson }}
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+const labels = JSON.parse(
+document.getElementById("trend-labels").textContent
+);
+
+const values = JSON.parse(
+document.getElementById("trend-values").textContent
+);
+
+
+new Chart(
+
+document.getElementById("trendChart"),
+
+{
+type: "line",
+
+data: {
+
+labels: labels,
+
+datasets: [{
+
+label: "Tickets",
+
+data: values,
+
+borderColor: "#667eea",
+
+fill: false
+
+}]
+
+}
+
+}
+
+);
+
+</script>
+
+{% endblock %}

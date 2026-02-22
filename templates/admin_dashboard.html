@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card">
+
+        <div class="card-header bg-dark text-white">
+
+            <h4>🎫 Admin Ticket Dashboard</h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                    <tr>
+
+                        <th>ID</th>
+                        <th>Issue</th>
+                        <th>Intent</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for ticket in tickets %}
+
+                    <tr>
+
+                        <td>#{{ ticket.id }}</td>
+
+                        <td>{{ ticket.issue }}</td>
+
+                        <td>
+
+                            <span class="badge bg-info">
+                                {{ ticket.intent }}
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {% if ticket.priority == "High" %}
+                                <span class="badge bg-danger">High</span>
+                            {% elif ticket.priority == "Medium" %}
+                                <span class="badge bg-warning text-dark">Medium</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Low</span>
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if ticket.status == "Open" %}
+                                <span class="badge bg-danger">Open</span>
+                            {% elif ticket.status == "In Progress" %}
+                                <span class="badge bg-warning text-dark">In Progress</span>
+                            {% else %}
+                                <span class="badge bg-success">Resolved</span>
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <form method="POST" action="/admin/update-status/{{ ticket.id }}">
+
+                                <select name="status" class="form-select form-select-sm">
+
+                                    <option>Open</option>
+                                    <option>In Progress</option>
+                                    <option>Resolved</option>
+
+                                </select>
+
+                                <button class="btn btn-primary btn-sm mt-1">
+
+                                    Update
+
+                                </button>
+
+                            </form>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

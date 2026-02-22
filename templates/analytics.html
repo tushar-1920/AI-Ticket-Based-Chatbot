@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h2>📊 Analytics Dashboard</h2>
+
+<div class="row">
+
+<div class="col-md-4">
+<div class="card p-3 shadow">
+<h5>Total Tickets</h5>
+<h3>{{ total }}</h3>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card p-3 shadow">
+<h5>Open Tickets</h5>
+<h3>{{ open_tickets }}</h3>
+</div>
+</div>
+
+<div class="col-md-4">
+<div class="card p-3 shadow">
+<h5>Resolved Tickets</h5>
+<h3>{{ resolved }}</h3>
+</div>
+</div>
+
+</div>
+
+
+<div class="row mt-4">
+
+<div class="col-md-6">
+
+<h5>Priority Distribution</h5>
+
+<canvas id="priorityChart"></canvas>
+
+</div>
+
+
+<div class="col-md-6">
+
+<h5>Intent Distribution</h5>
+
+<canvas id="intentChart"></canvas>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- SAFE DATA PASSING -->
+<script id="priority-labels" type="application/json">
+{{ priority_labels | tojson }}
+</script>
+
+<script id="priority-values" type="application/json">
+{{ priority_values | tojson }}
+</script>
+
+<script id="intent-labels" type="application/json">
+{{ intent_labels | tojson }}
+</script>
+
+<script id="intent-values" type="application/json">
+{{ intent_values | tojson }}
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<script>
+
+// Read safely from JSON script tags
+
+const priorityLabels = JSON.parse(
+document.getElementById("priority-labels").textContent
+);
+
+const priorityValues = JSON.parse(
+document.getElementById("priority-values").textContent
+);
+
+const intentLabels = JSON.parse(
+document.getElementById("intent-labels").textContent
+);
+
+const intentValues = JSON.parse(
+document.getElementById("intent-values").textContent
+);
+
+
+// Priority chart
+
+new Chart(
+document.getElementById("priorityChart"),
+{
+type: "bar",
+data: {
+labels: priorityLabels,
+datasets: [{
+label: "Tickets",
+data: priorityValues,
+backgroundColor: "#667eea"
+}]
+}
+}
+);
+
+
+// Intent chart
+
+new Chart(
+document.getElementById("intentChart"),
+{
+type: "pie",
+data: {
+labels: intentLabels,
+datasets: [{
+data: intentValues,
+backgroundColor: [
+"#667eea",
+"#f59e0b",
+"#ef4444",
+"#10b981"
+]
+}]
+}
+}
+);
+
+</script>
+
+{% endblock %}
