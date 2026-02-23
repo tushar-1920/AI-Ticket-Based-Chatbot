@@ -6,25 +6,25 @@ class Message(db.Model):
 
     __tablename__ = "messages"
 
-    id = db.Column(db.Integer, primary_key=True)
-
-    user_id = db.Column(
+    id = db.Column(
         db.Integer,
-        db.ForeignKey("users.id")
+        primary_key=True
     )
 
-    ticket_id = db.Column(
+    conversation_id = db.Column(
         db.Integer,
-        db.ForeignKey("tickets.id"),
-        nullable=True
+        db.ForeignKey("conversations.id"),
+        nullable=False
     )
 
     sender = db.Column(
-        db.String(20)
+        db.String(20),
+        nullable=False
     )
 
     message = db.Column(
-        db.Text
+        db.Text,
+        nullable=False
     )
 
     created_at = db.Column(

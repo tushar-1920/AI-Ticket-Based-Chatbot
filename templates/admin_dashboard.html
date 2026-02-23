@@ -1,114 +1,78 @@
 {% extends "base.html" %}
 
-{% block title %}Admin Dashboard{% endblock %}
-
 {% block content %}
 
-<div class="container mt-5">
+<h2>Admin Dashboard</h2>
 
-    <div class="card">
+<table class="table table-dark">
 
-        <div class="card-header bg-dark text-white">
+<tr>
+<th>ID</th>
+<th>User</th>
+<th>Issue</th>
+<th>Status</th>
+<th>Change Status</th>
+<th>Date</th>
+</tr>
 
-            <h4>🎫 Admin Ticket Dashboard</h4>
+{% for ticket in tickets %}
 
-        </div>
+<tr>
 
-        <div class="card-body">
+<td>{{ ticket.id }}</td>
 
-            <table class="table table-hover">
+<td>{{ ticket.user_id }}</td>
 
-                <thead>
+<td>{{ ticket.issue }}</td>
 
-                    <tr>
+<td>
+    <span class="badge bg-info">
+        {{ ticket.status }}
+    </span>
+</td>
 
-                        <th>ID</th>
-                        <th>Issue</th>
-                        <th>Intent</th>
-                        <th>Priority</th>
-                        <th>Status</th>
-                        <th>Action</th>
+<td>
 
-                    </tr>
+<form method="POST"
+      action="/admin/update-status/{{ ticket.id }}">
 
-                </thead>
+<select name="status"
+        class="form-select form-select-sm">
 
-                <tbody>
+<option value="Open"
+{% if ticket.status == "Open" %} selected {% endif %}>
+Open
+</option>
 
-                    {% for ticket in tickets %}
+<option value="Working"
+{% if ticket.status == "Working" %} selected {% endif %}>
+Working
+</option>
 
-                    <tr>
+<option value="Resolved"
+{% if ticket.status == "Resolved" %} selected {% endif %}>
+Resolved
+</option>
 
-                        <td>#{{ ticket.id }}</td>
+</select>
 
-                        <td>{{ ticket.issue }}</td>
+<button type="submit"
+        class="btn btn-success btn-sm mt-1">
 
-                        <td>
+Update
 
-                            <span class="badge bg-info">
-                                {{ ticket.intent }}
-                            </span>
+</button>
 
-                        </td>
+</form>
 
-                        <td>
+</td>
 
-                            {% if ticket.priority == "High" %}
-                                <span class="badge bg-danger">High</span>
-                            {% elif ticket.priority == "Medium" %}
-                                <span class="badge bg-warning text-dark">Medium</span>
-                            {% else %}
-                                <span class="badge bg-secondary">Low</span>
-                            {% endif %}
+<td>{{ ticket.created_at }}</td>
 
-                        </td>
+</tr>
 
-                        <td>
+{% endfor %}
 
-                            {% if ticket.status == "Open" %}
-                                <span class="badge bg-danger">Open</span>
-                            {% elif ticket.status == "In Progress" %}
-                                <span class="badge bg-warning text-dark">In Progress</span>
-                            {% else %}
-                                <span class="badge bg-success">Resolved</span>
-                            {% endif %}
-
-                        </td>
-
-                        <td>
-
-                            <form method="POST" action="/admin/update-status/{{ ticket.id }}">
-
-                                <select name="status" class="form-select form-select-sm">
-
-                                    <option>Open</option>
-                                    <option>In Progress</option>
-                                    <option>Resolved</option>
-
-                                </select>
-
-                                <button class="btn btn-primary btn-sm mt-1">
-
-                                    Update
-
-                                </button>
-
-                            </form>
-
-                        </td>
-
-                    </tr>
-
-                    {% endfor %}
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </div>
-
-</div>
+</table>
 
 {% endblock %}

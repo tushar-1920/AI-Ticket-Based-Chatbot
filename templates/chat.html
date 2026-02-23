@@ -4,38 +4,155 @@
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 
-<div class="chat-wrapper">
+<div class="chat-layout">
 
-    <div class="chat-header">
-        🤖 AI Support Assistant
-    </div>
+    <!-- SIDEBAR -->
 
-    <div id="chat-box" class="chat-box">
+    <div class="chat-sidebar">
 
-        <div class="bot-message">
-            Hello! I am your AI assistant. How can I help you today?
+        <div class="sidebar-header">
+            Conversations
         </div>
 
+        <div id="chat-history">
+
+            {% if conversations and conversations|length > 0 %}
+
+                {% for conv in conversations %}
+
+                    <div class="conversation-item"
+                         data-id="{{ conv.id }}"
+                         onclick="selectConversation(this)">
+
+                        {{ conv.title }}
+
+                    </div>
+
+                {% endfor %}
+
+            {% else %}
+
+                <div class="conversation-item">
+                    No conversations yet
+                </div>
+
+            {% endif %}
+
+        </div>
+
+        <button onclick="newConversation()"
+                class="btn btn-light btn-sm mt-2 w-100">
+
+            + New Chat
+
+        </button>
+
     </div>
 
-    <div class="chat-input-area">
 
-        <input
-            id="message-input"
-            type="text"
-            placeholder="Type your message..."
-            onkeypress="if(event.key==='Enter') sendMessage()"
-        >
+    <!-- CHAT AREA -->
 
-        <button onclick="sendMessage()">
-            Send
-        </button>
+    <div class="chat-main">
+
+        <div class="chat-header">
+            🤖 AI Support Assistant
+        </div>
+
+        <div id="chat-box" class="chat-box"></div>
+
+        <div id="typing"
+             class="typing-indicator"
+             style="display:none; padding:10px;">
+
+            AI is typing...
+
+        </div>
+
+        <div class="chat-input-area">
+
+            <input
+                id="message-input"
+                placeholder="Type message..."
+                autocomplete="off"
+                onkeypress="if(event.key==='Enter') sendMessage()"
+            >
+
+            <button onclick="sendMessage()">
+                Send
+            </button>
+
+        </div>
 
     </div>
 
 </div>
 
+
+<!-- SAFE SCRIPT BLOCK -->
+
+<script>
+
+let currentConversationId = null;
+
+
+// SELECT CONVERSATION
+
+function selectConversation(element)
+{
+    const id = element.getAttribute("data-id");
+
+    currentConversationId = id;
+
+    window.currentConversationId = id;
+
+    loadMessages(id);
+
+    highlightActive(element);
+}
+
+
+// NEW CONVERSATION
+
+function newConversation()
+{
+    window.location.href = "/conversation/new";
+}
+
+
+// HIGHLIGHT ACTIVE
+
+function highlightActive(element)
+{
+    document.querySelectorAll(".conversation-item")
+        .forEach(el => el.classList.remove("active"));
+
+    element.classList.add("active");
+}
+
+
+// AUTO SELECT FIRST CONVERSATION
+
+window.onload = function()
+{
+    const first = document.querySelector(".conversation-item");
+
+    if(first && first.getAttribute("data-id"))
+    {
+        selectConversation(first);
+    }
+};
+
+</script>
+
+
+<!-- SOCKET IO -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+
+
+<!-- CHAT SCRIPT -->
+
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+
 
 {% endblock %}

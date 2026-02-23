@@ -6,11 +6,11 @@
 
 <div class="container mt-5">
 
-    <div class="card">
+    <div class="card shadow-lg border-0">
 
         <div class="card-header bg-primary text-white">
 
-            <h4>🎫 My Support Tickets</h4>
+            <h4 class="mb-0">🎫 My Support Tickets</h4>
 
         </div>
 
@@ -18,19 +18,17 @@
 
             {% if tickets %}
 
-            <table class="table table-hover">
+            <table class="table table-hover align-middle">
 
-                <thead>
+                <thead class="table-dark">
 
                     <tr>
-
                         <th>ID</th>
                         <th>Issue</th>
                         <th>Intent</th>
                         <th>Priority</th>
                         <th>Status</th>
                         <th>Created</th>
-
                     </tr>
 
                 </thead>
@@ -41,9 +39,13 @@
 
                     <tr>
 
-                        <td>#{{ ticket.id }}</td>
+                        <td>
+                            <strong>#{{ ticket.id }}</strong>
+                        </td>
 
-                        <td>{{ ticket.issue }}</td>
+                        <td>
+                            {{ ticket.issue }}
+                        </td>
 
                         <td>
 
@@ -56,11 +58,23 @@
                         <td>
 
                             {% if ticket.priority == "High" %}
-                                <span class="badge bg-danger">High</span>
+
+                                <span class="badge bg-danger">
+                                    🔴 High
+                                </span>
+
                             {% elif ticket.priority == "Medium" %}
-                                <span class="badge bg-warning text-dark">Medium</span>
+
+                                <span class="badge bg-warning text-dark">
+                                    🟡 Medium
+                                </span>
+
                             {% else %}
-                                <span class="badge bg-secondary">Low</span>
+
+                                <span class="badge bg-secondary">
+                                    ⚪ Low
+                                </span>
+
                             {% endif %}
 
                         </td>
@@ -68,11 +82,29 @@
                         <td>
 
                             {% if ticket.status == "Open" %}
-                                <span class="badge bg-danger">Open</span>
-                            {% elif ticket.status == "In Progress" %}
-                                <span class="badge bg-warning text-dark">In Progress</span>
+
+                                <span class="badge bg-danger">
+                                    🔴 Open
+                                </span>
+
+                            {% elif ticket.status == "Working" %}
+
+                                <span class="badge bg-warning text-dark">
+                                    🟡 Working
+                                </span>
+
+                            {% elif ticket.status == "Resolved" %}
+
+                                <span class="badge bg-success">
+                                    🟢 Resolved
+                                </span>
+
                             {% else %}
-                                <span class="badge bg-success">Resolved</span>
+
+                                <span class="badge bg-secondary">
+                                    {{ ticket.status }}
+                                </span>
+
                             {% endif %}
 
                         </td>
@@ -93,7 +125,11 @@
 
             {% else %}
 
-                <p>No tickets found.</p>
+                <div class="alert alert-info">
+
+                    No tickets found.
+
+                </div>
 
             {% endif %}
 

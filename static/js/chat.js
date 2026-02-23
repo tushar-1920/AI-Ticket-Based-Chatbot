@@ -1,84 +1,176 @@
 const socket = io();
 
-function sendMessage() {
+const chatBox = document.getElementById("chat-box");
 
+const typingIndicator = document.getElementById("typing");
+
+
+// SEND MESSAGE
+
+function sendMessage()
+{
     const input = document.getElementById("message-input");
 
-    const message = input.value;
+    const message = input.value.trim();
 
-    if (!message) return;
+    if(!message)
+    {
+        return;
+    }
 
-    addUserMessage(message);
+    if(!window.currentConversationId)
+    {
+        alert("No conversation selected");
+        return;
+    }
+
+    addMessage("user", message);
+
+    showTyping();
 
     socket.emit("send_message", {
-        message: message
+
+        message: message,
+
+        conversation_id: window.currentConversationId
+
     });
 
     input.value = "";
 }
 
 
-socket.on("receive_message", function(data) {
+// RECEIVE MESSAGE
 
-    showTyping();
+socket.on("receive_message", function(data)
+{
+    hideTyping();
 
-    setTimeout(() => {
-
-        hideTyping();
-
-        addBotMessage(data.message);
-
-    }, 1000);
-
+    streamBotMessage(data.message);
 });
 
-function showTyping(){
 
-const chatBox = document.getElementById("chat-box");
+// ADD MESSAGE (USER OR BOT)
 
-const div = document.createElement("div");
-
-div.id = "typing";
-
-div.innerText = "AI is typing...";
-
-chatBox.appendChild(div);
-
-}
-
-function hideTyping(){
-
-let typing = document.getElementById("typing");
-
-if(typing) typing.remove();
-
-}
-
-function addUserMessage(message) {
-
-    const chatBox = document.getElementById("chat-box");
-
+function addMessage(sender, text)
+{
     const div = document.createElement("div");
 
-    div.className = "user-message";
+    div.className = "message " + sender;
 
-    div.innerText = message;
+    const avatar =
+        sender === "user"
+        ? "/static/img/user.png"
+        : "/static/img/bot.png";
+
+    const time = new Date().toLocaleTimeString();
+
+    div.innerHTML = `
+        <img src="${avatar}">
+        <div class="message-content">
+            <div class="message-text">${text}</div>
+            <div class="timestamp">${time}</div>
+        </div>
+    `;
 
     chatBox.appendChild(div);
 
+    scrollDown();
 }
 
 
-function addBotMessage(message) {
+// STREAM BOT MESSAGE (PROFESSIONAL)
 
-    const chatBox = document.getElementById("chat-box");
-
+function streamBotMessage(text)
+{
     const div = document.createElement("div");
 
-    div.className = "bot-message";
+    div.className = "message bot";
 
-    div.innerText = message;
+    const avatar = "/static/img/bot.png";
+
+    const time = new Date().toLocaleTimeString();
+
+    div.innerHTML = `
+        <img src="${avatar}">
+        <div class="message-content">
+            <div class="message-text" id="stream-text"></div>
+            <div class="timestamp">${time}</div>
+        </div>
+    `;
 
     chatBox.appendChild(div);
 
+    const textElement = div.querySelector("#stream-text");
+
+    let i = 0;
+
+    const interval = setInterval(() =>
+    {
+        if(i >= text.length)
+        {
+            clearInterval(interval);
+            return;
+        }
+
+        textElement.innerText += text[i];
+
+        i++;
+
+        scrollDown();
+
+    }, 20);
 }
+
+
+// SHOW TYPING
+
+function showTyping()
+{
+    typingIndicator.style.display = "block";
+}
+
+
+// HIDE TYPING
+
+function hideTyping()
+{
+    typingIndicator.style.display = "none";
+}
+
+
+// LOAD MESSAGES
+
+function loadMessages(conversationId)
+{
+    fetch("/conversation/messages/" + conversationId)
+    .then(res => res.json())
+    .then(data =>
+    {
+        chatBox.innerHTML = "";
+
+        data.forEach(msg =>
+        {
+            addMessage(msg.sender, msg.message);
+        });
+    });
+}
+
+
+// SCROLL
+
+function scrollDown()
+{
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+
+// LOAD ON START
+
+window.addEventListener("load", () =>
+{
+    if(window.currentConversationId)
+    {
+        loadMessages(window.currentConversationId);
+    }
+});

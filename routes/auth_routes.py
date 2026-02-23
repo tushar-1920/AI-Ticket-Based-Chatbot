@@ -44,7 +44,7 @@ def login():
         if user:
 
             session["user_id"] = user.id
-            session["user_name"] = user.name
+            session["user_email"] = user.email
 
             return redirect("/chat")
 

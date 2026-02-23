@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session
+from flask import Flask, render_template, session, redirect
 from flask_socketio import SocketIO, emit
 
 from config import Config
@@ -8,6 +8,7 @@ from models import db
 from models.user import User
 from models.ticket import Ticket
 from models.message import Message
+from models.conversation import Conversation
 
 # Blueprints
 from routes.auth_routes import auth
@@ -18,12 +19,17 @@ from routes.analytics_routes import analytics_bp
 
 # Services
 from services.chatbot_service import get_bot_response
+from services.message_service import save_message
 
 
-# Initialize SocketIO
-socketio = SocketIO()
+# Initialize SocketIO properly
+socketio = SocketIO(
+    cors_allowed_origins="*",
+    manage_session=False
+)
 
 
+# Create Flask app
 def create_app():
 
     app = Flask(__name__)
@@ -38,88 +44,111 @@ def create_app():
     app.register_blueprint(admin)
     app.register_blueprint(ticket_bp)
     app.register_blueprint(analytics_bp)
-    
 
+    # Create tables
     with app.app_context():
+
         db.create_all()
+
         print("✅ Database created successfully.")
 
+    # Initialize socket
     socketio.init_app(app)
 
     return app
 
 
+# Create app instance
 app = create_app()
 
 
-# Home
+# Home route
 @app.route("/")
 def home():
-    return render_template("base.html")
 
-from flask import Blueprint, render_template, request, jsonify, session
-from services.chatbot_service import get_bot_response
+    if session.get("user_id"):
+        return redirect("/chat")
 
-# ✅ FIRST create Blueprint
-chat = Blueprint("chat", __name__)
-
-@chat.route("/chat")
-def chat_page():
-    return render_template("chat.html")
+    return redirect("/login")
 
 
-# Chat page route
-@chat.route("/chat")
-def chat_page():
-    return render_template("chat.html")
-
-
-# Chat API route
-@chat.route("/api/chat", methods=["POST"])
-def chat_api():
-
-    user_id = session.get("user_id")
-
-    if not user_id:
-        return jsonify({
-            "response": "Please login first."
-        })
-
-    data = request.get_json()
-
-    message = data.get("message")
-
-    response, intent = get_bot_response(message, user_id)
-
-    return jsonify({
-        "response": response,
-        "intent": intent
-    })
-# SOCKET EVENT
+# SocketIO event handler
 @socketio.on("send_message")
 def handle_message(data):
 
-    user_id = session.get("user_id")
+    try:
 
-    if not user_id:
+        print("Received:", data)
+
+        user_id = session.get("user_id")
+
+        if not user_id:
+
+            emit("receive_message", {
+                "message": "Please login first."
+            })
+
+            return
+
+
+        message = data.get("message")
+
+        conversation_id = data.get("conversation_id")
+
+
+        if not message or not conversation_id:
+
+            emit("receive_message", {
+                "message": "Invalid conversation."
+            })
+
+            return
+
+
+        # Save user message
+        save_message(
+            conversation_id,
+            "user",
+            message
+        )
+
+
+        # Generate bot response
+        response, intent = get_bot_response(
+            message,
+            user_id
+        )
+
+
+        # Save bot response
+        save_message(
+            conversation_id,
+            "bot",
+            response
+        )
+
+
+        print("Bot response:", response)
+
+
+        # Send response
         emit("receive_message", {
-            "message": "Please login first."
+            "message": response
         })
-        return
-
-    message = data["message"]
-
-    response, intent = get_bot_response(
-        message,
-        user_id
-    )
-
-    emit("receive_message", {
-        "message": response
-    })
 
 
+    except Exception as e:
+
+        print("SOCKET ERROR:", str(e))
+
+        emit("receive_message", {
+            "message": "Server error occurred."
+        })
+
+
+# Run server
 if __name__ == "__main__":
+
     socketio.run(
         app,
         debug=True
